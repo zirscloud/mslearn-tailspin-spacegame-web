@@ -14,15 +14,10 @@ variables:
 
 steps:
 - task: UseDotNet@2
-  displayName: 'User .NET SDK 6.0'
+  displayName: 'User .NET SDK 8.0'
   inputs:
     packageType: SDK
-    version: '6.x'
-
-- task: Npm@1
-  displayName: 'Run npm install'
-  inputs: 
-    verbose: false
+    version: '8.x'
 
 - script: './node_modules/.bin/node-sass Tailspin.SpaceGame.Web/wwwroot --output Tailspin.SpaceGame.Web/wwwroot'
   displayName: 'Compile Sass assets'
@@ -42,3 +37,16 @@ steps:
 
 - script: dotnet build --no-restore --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Publish the project - Release'
+  inputs:
+    command: 'publish'
+    projects: '**/*.csproj'
+    publishWebProjects: false
+    arguments: '--no-build --configuration Release --output $(Build.ArtifactStagingDirectory)/Release'
+    zipAfterPublish: true
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: drop'
+  condition: succeeded()
